@@ -288,7 +288,7 @@ public class Window : ScriptableWizard
 
     void CreateSymbolicLinks()
     {
-        var dirPath = symbolicLinkDirectoryFullPath;
+        var dirPath = Path.Combine(symbolicLinkDirectoryFullPath, "Packages/");
         Directory.CreateDirectory(dirPath);
 
         int i = 0, n = packages.Count + 1;

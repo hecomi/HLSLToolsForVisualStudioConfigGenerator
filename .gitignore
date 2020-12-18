@@ -75,4 +75,6 @@ shadertoolsconfig.json
 # For This Project
 Assets/uRaymarching*
 Assets/uShaderTemplate*
+LocalPackages*
+ShaderIncludes*
 Wiki
