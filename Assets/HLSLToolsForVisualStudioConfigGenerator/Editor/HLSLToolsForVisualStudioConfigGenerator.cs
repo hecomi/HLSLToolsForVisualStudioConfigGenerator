@@ -55,6 +55,7 @@ public class Window : ScriptableWizard
     { 
         DrawSettings();
         EditorGUILayout.Space();
+        UpdateExportInfo();
         DrawExport();
         EditorGUILayout.Space();
         DrawPackages();
@@ -64,11 +65,19 @@ public class Window : ScriptableWizard
 
     void OnWizardCreate()
     {
+        Close();
     }
 
     void OnWizardOtherButton()
     {
-        Export();
+        try
+        {
+            Export();
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+        }
     }
 
     // ---
@@ -78,6 +87,8 @@ public class Window : ScriptableWizard
     string symbolicLinkDirectory = "ShaderIncludes";
     bool exportCgIncludeDir = true;
     bool exportPackageDir = true;
+    bool doesConfigJsonExist = false;
+    bool doesSymbolicLinkDirExist = false;
 
     string infoMessage = "";
     string errorMessage = "";
@@ -92,7 +103,7 @@ public class Window : ScriptableWizard
         get { return Path.Combine(rootDirFullPath, "Packages\\packages-lock.json"); }
     }
 
-    string outputConfigFullPath
+    string configJsonFullPath
     {
         get { return Path.Combine(rootDirFullPath, "shadertoolsconfig.json"); }
     }
@@ -185,35 +196,79 @@ public class Window : ScriptableWizard
         --EditorGUI.indentLevel;
     }
 
+    void UpdateExportInfo()
+    {
+        doesConfigJsonExist = File.Exists(configJsonFullPath);
+        doesSymbolicLinkDirExist = Directory.Exists(symbolicLinkDirectoryFullPath);
+    }
+
     void DrawExport()
     {
         EditorGUILayout.LabelField("Output", EditorStyles.boldLabel);
         ++EditorGUI.indentLevel;
         {
-            var layout = GUILayout.Width(48f);
+            var buttonLayout = GUILayout.Width(48f);
+            var labelStyleGray = new GUIStyle(EditorStyles.label);
+            labelStyleGray.normal.textColor = Color.gray;
 
             EditorGUILayout.BeginHorizontal();
             {
-                EditorGUILayout.LabelField("Config Json Path", outputConfigFullPath);
-                if (GUILayout.Button("Open", layout))
+                if (doesConfigJsonExist)
                 {
-                    System.Diagnostics.Process.Start(outputConfigFullPath);
+                    EditorGUILayout.LabelField("Config Json", configJsonFullPath);
+
+                    if (GUILayout.Button("Delete", buttonLayout))
+                    {
+                        DeleteConfigJson();
+                    }
+
+                    if (GUILayout.Button("Open", buttonLayout))
+                    {
+                        System.Diagnostics.Process.Start(configJsonFullPath);
+                    }
+                }
+                else
+                {
+                    EditorGUILayout.LabelField("Config Json", configJsonFullPath, labelStyleGray);
                 }
             }
             EditorGUILayout.EndHorizontal();
+
             EditorGUILayout.BeginHorizontal();
             {
-                EditorGUILayout.LabelField("Package Directory", symbolicLinkDirectoryFullPath);
-                if (GUILayout.Button("Open", layout))
+                if (doesSymbolicLinkDirExist)
                 {
-                    System.Diagnostics.Process.Start(symbolicLinkDirectoryFullPath);
+                    EditorGUILayout.LabelField("Symbolic Link", symbolicLinkDirectoryFullPath);
+
+                    if (GUILayout.Button("Delete", buttonLayout))
+                    {
+                        bool isDeleteConfirmed = EditorUtility.DisplayDialog(
+                            windowName, 
+                            "Are you sure you want to delete \"" + symbolicLinkDirectoryFullPath + "\"?",
+                            "Delete",
+                            "Cancel");
+                        if (isDeleteConfirmed)
+                        {
+                            DeleteSymbolicLinks();
+                        }
+                    }
+
+                    if (GUILayout.Button("Open", buttonLayout))
+                    {
+                        System.Diagnostics.Process.Start(symbolicLinkDirectoryFullPath);
+                    }
+                }
+                else
+                {
+                    EditorGUILayout.LabelField("Symbolic Link", symbolicLinkDirectoryFullPath, labelStyleGray);
                 }
             }
             EditorGUILayout.EndHorizontal();
+
             EditorGUILayout.BeginHorizontal();
             {
                 EditorGUILayout.LabelField("Unity Directory", cgIncludesDirectoryFullPath);
-                if (GUILayout.Button("Open", layout))
+                if (GUILayout.Button("Open", buttonLayout))
                 {
                     System.Diagnostics.Process.Start(cgIncludesDirectoryFullPath);
                 }
@@ -296,12 +351,13 @@ public class Window : ScriptableWizard
         {
             var dirWithVersion = string.Format("{0}@{1}", pkg.name, pkg.version);
             var origDir = Path.Combine(originalPackageDirectoryFullPath, dirWithVersion);
-            var symLink = Path.Combine(symbolicLinkDirectoryFullPath, "Packages/" + pkg.name);
+            var symLink = Path.Combine(dirPath, pkg.name);
             var cmd = string.Format(@"mklink /d ""{0}"" ""{1}""", symLink, origDir);
             var proc = new System.Diagnostics.ProcessStartInfo("cmd.exe", "/c " + cmd);
             proc.CreateNoWindow = true;
             proc.UseShellExecute = false;
             System.Diagnostics.Process.Start(proc).WaitForExit();
+
             EditorUtility.DisplayProgressBar(windowName, dirWithVersion, (float)++i / n);
         }
     }
@@ -323,12 +379,53 @@ public class Window : ScriptableWizard
 
         var jsonStr = MiniJSON.Json.Serialize(root);
         
-        using (var stream = new StreamWriter(outputConfigFullPath, false, System.Text.Encoding.UTF8))
+        using (var stream = new StreamWriter(configJsonFullPath, false, System.Text.Encoding.UTF8))
         {
             stream.Write(jsonStr);
         }
 
         infoMessage = "Exported!";
+    }
+
+    void DeleteSymbolicLinks()
+    {
+        try
+        {
+            var packagesPath = Path.Combine(symbolicLinkDirectoryFullPath, "Packages/");
+            var symbolicLinks = Directory.GetDirectories(packagesPath);
+
+            int i = 0, n = symbolicLinks.Length;
+            foreach (var symLink in symbolicLinks)
+            {
+                var cmd = string.Format(@"rmdir ""{0}""", symLink);
+                var proc = new System.Diagnostics.ProcessStartInfo("cmd.exe", "/c " + cmd);
+                proc.CreateNoWindow = true;
+                proc.UseShellExecute = false;
+                System.Diagnostics.Process.Start(proc).WaitForExit();
+
+                EditorUtility.DisplayProgressBar(windowName, symLink, (float)++i / n);
+            }
+            EditorUtility.ClearProgressBar();
+
+            Debug.Log(symbolicLinkDirectoryFullPath);
+            Directory.Delete(symbolicLinkDirectoryFullPath, true);
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+        }
+    }
+
+    void DeleteConfigJson()
+    {
+        try
+        {
+            File.Delete(configJsonFullPath);
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+        }
     }
 }
 
