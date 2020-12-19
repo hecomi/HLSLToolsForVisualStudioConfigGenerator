@@ -154,6 +154,7 @@ public class Window : ScriptableWizard
             var name = kv.Key;
             var pkg = kv.Value as Dictionary<string, object>;
             if (pkg["source"].Equals("builtin")) continue; // skip built-in packages
+            if (pkg["source"].Equals("local")) continue; // skip local packages
             var ver = pkg["version"] as string;
             packages.Add(new PackageInfo { name = name, version = ver });
         }
