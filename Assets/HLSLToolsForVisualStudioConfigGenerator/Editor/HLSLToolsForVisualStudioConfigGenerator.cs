@@ -85,6 +85,7 @@ public class Window : ScriptableWizard
     Vector2 packagesScrollPos = Vector2.zero;
     List<PackageInfo> packages = new List<PackageInfo>();
     string symbolicLinkDirectory = "ShaderIncludes";
+    bool exportProjectDir = true;
     bool exportCgIncludeDir = true;
     bool exportPackageDir = true;
     bool doesConfigJsonExist = false;
@@ -173,6 +174,7 @@ public class Window : ScriptableWizard
         EditorGUILayout.LabelField("Settings", EditorStyles.boldLabel);
         ++EditorGUI.indentLevel;
         {
+            exportProjectDir = EditorGUILayout.Toggle("Include Project", exportProjectDir);
             exportCgIncludeDir = EditorGUILayout.Toggle("Include CGInclude", exportCgIncludeDir);
             exportPackageDir = EditorGUILayout.Toggle("Include Packages", exportPackageDir);
 
@@ -371,6 +373,7 @@ public class Window : ScriptableWizard
         // TODO: add definitions if needed
 
         var dirs = new List<string>();
+        if (exportProjectDir) dirs.Add(".");
         if (exportCgIncludeDir) dirs.Add(cgIncludesDirectoryFullPath);
         if (exportPackageDir) dirs.Add(symbolicLinkDirectory);
 
