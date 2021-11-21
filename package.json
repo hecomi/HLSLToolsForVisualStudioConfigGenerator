@@ -1,0 +1,20 @@
+{
+    "name": "com.hecomi.hlsltoolsforvisualstudioconfiggenerator",
+    "version": "1.0.0",
+    "displayName": "HLSLToolsForVisualStudioConfigGenerator",
+    "description": "Create shadertoolsconfig.json for Unity project",
+    "author": {
+        "name": "hecomi",
+        "url": "https://tips.hecomi.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/hecomi/HLSLToolsForVisualStudioConfigGenerator"
+    },
+    "keywords": [
+        "unity",
+        "visualstudio",
+        "shader"
+    ],
+    "license": "MIT License"
+}

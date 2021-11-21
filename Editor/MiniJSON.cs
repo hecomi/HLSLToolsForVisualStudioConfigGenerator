@@ -32,6 +32,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
+namespace HLSLToolsForVisualStudioConfigGenerator {
+
 namespace MiniJSON {
     // Example usage:
     //
@@ -544,4 +546,6 @@ namespace MiniJSON {
             }
         }
     }
+}
+
 }
