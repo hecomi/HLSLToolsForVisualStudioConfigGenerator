@@ -1,4 +1,4 @@
-﻿/*
+/*
 MIT License
 
 Copyright (c) 2020 hecomi
@@ -52,7 +52,7 @@ public class Window : ScriptableWizard
     }
 
     protected override bool DrawWizardGUI()
-    { 
+    {
         DrawSettings();
         EditorGUILayout.Space();
         UpdateExportInfo();
@@ -114,7 +114,7 @@ public class Window : ScriptableWizard
         get { return Path.Combine(rootDirFullPath, symbolicLinkDirectory); }
     }
 
-    string originalPackageDirectoryFullPath 
+    string originalPackageDirectoryFullPath
     {
         get { return Path.Combine(rootDirFullPath, "Library\\PackageCache"); }
     }
@@ -157,6 +157,10 @@ public class Window : ScriptableWizard
             if (pkg["source"].Equals("builtin")) continue; // skip built-in packages
             if (pkg["source"].Equals("local")) continue; // skip local packages
             var ver = pkg["version"] as string;
+            if (pkg["source"]).Equals("git"){
+                // Git package PackageCache directory appears to use 10 character short hash as the version string
+                ver = (pkg["hash"] as string).Substring(0,10);
+            }
             packages.Add(new PackageInfo { name = name, version = ver });
         }
     }
@@ -164,7 +168,7 @@ public class Window : ScriptableWizard
     string OpenDialogToSelectSymbolicLinkPath()
     {
         return EditorUtility.OpenFolderPanel(
-            "Select directory path to create symbolic links", 
+            "Select directory path to create symbolic links",
             rootDirFullPath,
             string.Empty);
     }
@@ -181,7 +185,7 @@ public class Window : ScriptableWizard
             EditorGUILayout.BeginHorizontal();
             {
                 symbolicLinkDirectory = EditorGUILayout.TextField(
-                    new GUIContent("Symbolic Link Path", "Create symbolic links of all installed packages in this directory."), 
+                    new GUIContent("Symbolic Link Path", "Create symbolic links of all installed packages in this directory."),
                     symbolicLinkDirectory);
                 var layout = GUILayout.Width(25f);
                 if (GUILayout.Button("...", layout))
@@ -246,7 +250,7 @@ public class Window : ScriptableWizard
                     if (GUILayout.Button("Delete", buttonLayout))
                     {
                         bool isDeleteConfirmed = EditorUtility.DisplayDialog(
-                            windowName, 
+                            windowName,
                             "Are you sure you want to delete \"" + symbolicLinkDirectoryFullPath + "\"?",
                             "Delete",
                             "Cancel");
@@ -382,7 +386,7 @@ public class Window : ScriptableWizard
         root.Add("hlsl.additionalIncludeDirectories", dirs);
 
         var jsonStr = MiniJSON.Json.Serialize(root);
-        
+
         using (var stream = new StreamWriter(configJsonFullPath, false, System.Text.Encoding.UTF8))
         {
             stream.Write(jsonStr);
