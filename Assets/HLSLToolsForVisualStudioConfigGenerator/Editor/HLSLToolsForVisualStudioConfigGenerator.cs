@@ -101,7 +101,7 @@ public class Window : ScriptableWizard
 
     string packagesLockJsonFullPath
     {
-        get { return Path.Combine(rootDirFullPath, "Packages\\packages-lock.json"); }
+        get { return Path.Combine(rootDirFullPath, "Packages", "packages-lock.json"); }
     }
 
     string configJsonFullPath
@@ -116,7 +116,7 @@ public class Window : ScriptableWizard
 
     string originalPackageDirectoryFullPath
     {
-        get { return Path.Combine(rootDirFullPath, "Library\\PackageCache"); }
+        get { return Path.Combine(rootDirFullPath, "Library", "PackageCache"); }
     }
 
     string cgIncludesDirectoryFullPath
@@ -125,7 +125,7 @@ public class Window : ScriptableWizard
         {
             var appPath = Environment.GetCommandLineArgs()[0];
             var appDir = Path.GetDirectoryName(appPath);
-            return Path.Combine(appDir, "Data\\CGIncludes");
+            return Path.Combine(appDir, "Data", "CGIncludes");
         }
     }
 
