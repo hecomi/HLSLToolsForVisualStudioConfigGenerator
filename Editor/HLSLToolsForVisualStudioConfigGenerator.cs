@@ -141,7 +141,12 @@ public class Window : ScriptableWizard
         {
             var appPath = Environment.GetCommandLineArgs()[0];
             var appDir = Path.GetDirectoryName(appPath);
+#if UNITY_EDITOR_OSX
+            var contentsDir = Directory.GetParent(appDir);
+            return Path.Combine(contentsDir.FullName, "CGIncludes");
+#else
             return Path.Combine(appDir, "Data", "CGIncludes");
+#endif
         }
     }
 
@@ -400,8 +405,13 @@ public class Window : ScriptableWizard
             
             var origDir = Path.Combine(originalPackageDirectoryFullPath, pkg.dir);
             var symLink = Path.Combine(dirPath, pkg.name);
+#if UNITY_EDITOR_OSX
+            var cmd = $"ln -s \"{origDir}\" \"{symLink}\"";
+            var proc = new System.Diagnostics.ProcessStartInfo("/bin/bash", $"-c \"{cmd}\"");
+#else
             var cmd = $"mklink /d \"{symLink}\" \"{origDir}\"";
-            var proc = new System.Diagnostics.ProcessStartInfo("cmd.exe", "/c " + cmd);
+            var proc = new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c {cmd}");
+#endif
             proc.CreateNoWindow = true;
             proc.UseShellExecute = false;
             System.Diagnostics.Process.Start(proc).WaitForExit();
