@@ -157,9 +157,10 @@ public class Window : ScriptableWizard
             if (pkg["source"].Equals("builtin")) continue; // skip built-in packages
             if (pkg["source"].Equals("local")) continue; // skip local packages
             var ver = pkg["version"] as string;
-            if (pkg["source"]).Equals("git"){
-                // Git package PackageCache directory appears to use 10 character short hash as the version string
-                ver = (pkg["hash"] as string).Substring(0,10);
+            if (pkg["source"].Equals("git"))
+            {
+                // Git package PackageCache directory appears to use 10-character short hash as version string
+                ver = (pkg["hash"] as string).Substring(0, 10);
             }
             packages.Add(new PackageInfo { name = name, version = ver });
         }
