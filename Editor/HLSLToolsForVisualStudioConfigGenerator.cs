@@ -37,6 +37,8 @@ internal struct PackageInfo
 {
     public string name;
     public string version;
+    public string label => $"{name} ({version})";
+    public string dir => $"{name}@{version}";
 }
 
 public class Window : ScriptableWizard
@@ -304,10 +306,8 @@ public class Window : ScriptableWizard
                 {
                     EditorGUILayout.BeginHorizontal();
                     {
-                        var str = string.Format("{0} ({1})", pkg.name, pkg.version);
-                        EditorGUILayout.LabelField(str);
-                        var dirWithVersion = string.Format("{0}@{1}", pkg.name, pkg.version);
-                        var origDir = Path.Combine(originalPackageDirectoryFullPath, dirWithVersion);
+                        EditorGUILayout.LabelField(pkg.label);
+                        var origDir = Path.Combine(originalPackageDirectoryFullPath, pkg.dir);
                         if (GUILayout.Button("Open", layout))
                         {
                             System.Diagnostics.Process.Start(origDir);
@@ -357,8 +357,7 @@ public class Window : ScriptableWizard
         int i = 0, n = packages.Count + 1;
         foreach (var pkg in packages)
         {
-            var dirWithVersion = string.Format("{0}@{1}", pkg.name, pkg.version);
-            var origDir = Path.Combine(originalPackageDirectoryFullPath, dirWithVersion);
+            var origDir = Path.Combine(originalPackageDirectoryFullPath, pkg.dir);
             var symLink = Path.Combine(dirPath, pkg.name);
             var cmd = string.Format(@"mklink /d ""{0}"" ""{1}""", symLink, origDir);
             var proc = new System.Diagnostics.ProcessStartInfo("cmd.exe", "/c " + cmd);
@@ -366,7 +365,7 @@ public class Window : ScriptableWizard
             proc.UseShellExecute = false;
             System.Diagnostics.Process.Start(proc).WaitForExit();
 
-            EditorUtility.DisplayProgressBar(windowName, dirWithVersion, (float)++i / n);
+            EditorUtility.DisplayProgressBar(windowName, pkg.dir, (float)++i / n);
         }
     }
 
