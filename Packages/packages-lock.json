@@ -1,5 +1,21 @@
 {
   "dependencies": {
+    "com.hecomi.uraymarching": {
+      "version": "https://github.com/hecomi/uRaymarching.git#upm",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.hecomi.ushadertemplate": "1.0.2"
+      },
+      "hash": "41762cdc4ae1e9bd6f47acc7c798aa3ff6049ed7"
+    },
+    "com.hecomi.ushadertemplate": {
+      "version": "https://github.com/hecomi/uShaderTemplate.git#upm",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "0927b95a8bbe28c3b481ea5ff323a67d067b1a64"
+    },
     "com.unity.burst": {
       "version": "1.8.2",
       "depth": 1,

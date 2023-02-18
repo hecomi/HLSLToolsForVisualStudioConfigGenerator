@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "com.hecomi.uraymarching": "https://github.com/hecomi/uRaymarching.git#upm",
+    "com.hecomi.ushadertemplate": "https://github.com/hecomi/uShaderTemplate.git#upm",
     "com.unity.collab-proxy": "1.17.7",
     "com.unity.ide.rider": "3.0.16",
     "com.unity.ide.visualstudio": "2.0.16",
