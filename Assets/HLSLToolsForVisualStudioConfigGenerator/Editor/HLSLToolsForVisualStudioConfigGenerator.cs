@@ -33,12 +33,25 @@ using System.Collections.Generic;
 namespace HLSLToolsForVisualStudioConfigGenerator
 {
 
-internal struct PackageInfo
+internal class PackageInfo
 {
     public string name;
     public string version;
-    public string label => $"{name} ({version})";
-    public string dir => $"{name}@{version}";
+    public string source;
+    public string dir;
+    public bool use = true;
+    public string label => $"{name} ({source}: {version})";
+}
+
+internal static class Common
+{
+    public static List<string> hlslPackages = new List<string>
+    {
+        "com.unity.render-pipelines.core",
+        "com.unity.render-pipelines.high-definition",
+        "com.unity.render-pipelines.universal",
+        "com.unity.shadergraph",
+    };
 }
 
 public class Window : ScriptableWizard
@@ -79,6 +92,7 @@ public class Window : ScriptableWizard
         catch (Exception e)
         {
             errorMessage = e.Message;
+            EditorUtility.ClearProgressBar();
         }
     }
 
@@ -156,15 +170,34 @@ public class Window : ScriptableWizard
         {
             var name = kv.Key;
             var pkg = kv.Value as Dictionary<string, object>;
-            if (pkg["source"].Equals("builtin")) continue; // skip built-in packages
-            if (pkg["source"].Equals("local")) continue; // skip local packages
+            var source = pkg["source"] as string;
             var ver = pkg["version"] as string;
-            if (pkg["source"].Equals("git"))
+            var dir = $"{name}@{ver}";
+            bool use = false;
+
+            if (source.Equals("local"))
             {
-                // Git package PackageCache directory appears to use 10-character short hash as version string
-                ver = (pkg["hash"] as string).Substring(0, 10);
+                continue;
             }
-            packages.Add(new PackageInfo { name = name, version = ver });
+            else if (source.Equals("git"))
+            {
+                var hash = pkg["hash"] as string;
+                dir = $"{name}@{hash.Substring(0, 10)}";
+                use = true;
+            }
+            else if (source.Equals("builtin"))
+            {
+                use = Common.hlslPackages.Contains(name);
+            }
+
+            packages.Add(new PackageInfo 
+            { 
+                name = name, 
+                version = ver, 
+                source = source,
+                dir = dir,
+                use = use,
+            });
         }
     }
 
@@ -188,7 +221,9 @@ public class Window : ScriptableWizard
             EditorGUILayout.BeginHorizontal();
             {
                 symbolicLinkDirectory = EditorGUILayout.TextField(
-                    new GUIContent("Symbolic Link Path", "Create symbolic links of all installed packages in this directory."),
+                    new GUIContent(
+                        "Symbolic Link Path", 
+                        "Create symbolic links of all installed packages in this directory."),
                     symbolicLinkDirectory);
                 var layout = GUILayout.Width(25f);
                 if (GUILayout.Button("...", layout))
@@ -300,16 +335,20 @@ public class Window : ScriptableWizard
         {
             packagesScrollPos = EditorGUILayout.BeginScrollView(packagesScrollPos);
             {
-                var layout = GUILayout.Width(48f);
+                var toggleLayout = GUILayout.Width(20f);
+                var openButtonLayout = GUILayout.Width(48f);
 
                 foreach (var pkg in packages)
                 {
                     EditorGUILayout.BeginHorizontal();
                     {
+                        pkg.use = EditorGUILayout.Toggle(pkg.use, toggleLayout);
+
                         EditorGUILayout.LabelField(pkg.label);
-                        var origDir = Path.Combine(originalPackageDirectoryFullPath, pkg.dir);
-                        if (GUILayout.Button("Open", layout))
+
+                        if (GUILayout.Button("Open", openButtonLayout))
                         {
+                            var origDir = Path.Combine(originalPackageDirectoryFullPath, pkg.dir);
                             System.Diagnostics.Process.Start(origDir);
                         }
                     }
@@ -357,9 +396,11 @@ public class Window : ScriptableWizard
         int i = 0, n = packages.Count + 1;
         foreach (var pkg in packages)
         {
+            if (!pkg.use) continue;
+            
             var origDir = Path.Combine(originalPackageDirectoryFullPath, pkg.dir);
             var symLink = Path.Combine(dirPath, pkg.name);
-            var cmd = string.Format(@"mklink /d ""{0}"" ""{1}""", symLink, origDir);
+            var cmd = $"mklink /d \"{symLink}\" \"{origDir}\"";
             var proc = new System.Diagnostics.ProcessStartInfo("cmd.exe", "/c " + cmd);
             proc.CreateNoWindow = true;
             proc.UseShellExecute = false;
