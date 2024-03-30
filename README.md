@@ -25,4 +25,4 @@ How to Use
 
 Screenshot
 ----------
-![image](https://user-images.githubusercontent.com/493433/102501502-dc5e5400-40c0-11eb-81a5-568d838e863d.png)
+<img width="842" alt="Screen Shot 2024-03-30 at 16 25 48" src="https://github.com/hecomi/HLSLToolsForVisualStudioConfigGenerator/assets/493433/b31955e9-6472-4188-8127-826deb78daff">
