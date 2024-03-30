@@ -479,8 +479,13 @@ public class Window : ScriptableWizard
             int i = 0, n = symbolicLinks.Length;
             foreach (var symLink in symbolicLinks)
             {
+#if UNITY_EDITOR_OSX
+                var cmd = string.Format(@"rm ""{0}""", symLink);
+                var proc = new System.Diagnostics.ProcessStartInfo("/bin/bash", $"-c '{cmd}'");
+#else
                 var cmd = string.Format(@"rmdir ""{0}""", symLink);
-                var proc = new System.Diagnostics.ProcessStartInfo("cmd.exe", "/c " + cmd);
+                var proc = new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c {cmd}");
+#endif
                 proc.CreateNoWindow = true;
                 proc.UseShellExecute = false;
                 System.Diagnostics.Process.Start(proc).WaitForExit();
@@ -489,7 +494,6 @@ public class Window : ScriptableWizard
             }
             EditorUtility.ClearProgressBar();
 
-            Debug.Log(symbolicLinkDirectoryFullPath);
             Directory.Delete(symbolicLinkDirectoryFullPath, true);
         }
         catch (Exception e)
