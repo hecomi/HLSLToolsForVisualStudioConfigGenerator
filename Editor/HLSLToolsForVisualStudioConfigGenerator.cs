@@ -396,8 +396,7 @@ public class Window : ScriptableWizard
     void CreateSymbolicLinks()
     {
         var dirPath = Path.Combine(symbolicLinkDirectoryFullPath, "Packages/");
-        Directory.Delete(dirPath, true);
-        Directory.CreateDirectory(dirPath);
+        CreateDirectory(dirPath);
 
         int i = 0, n = packages.Count + 1;
         foreach (var pkg in packages)
@@ -445,6 +444,29 @@ public class Window : ScriptableWizard
         }
 
         infoMessage = "Exported!";
+    }
+
+    void CreateDirectory(string dirPath)
+    {
+        try
+        {
+            if (Directory.Exists(dirPath))
+            {
+                var directories = Directory.GetDirectories(dirPath);
+                foreach (var path in directories)
+                {
+                    Directory.Delete(path, true);
+                }
+            }
+            else
+            {
+                Directory.CreateDirectory(dirPath);
+            }
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+        }
     }
 
     void DeleteSymbolicLinks()
