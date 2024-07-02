@@ -409,7 +409,7 @@ public class Window : ScriptableWizard
             var cmd = $"ln -s \"{origDir}\" \"{symLink}\"";
             var proc = new System.Diagnostics.ProcessStartInfo("/bin/bash", $"-c '{cmd}'");
 #else
-            var cmd = $"mklink /d \"{symLink}\" \"{origDir}\"";
+            var cmd = $"mklink /d /j \"{symLink}\" \"{origDir}\"";
             var proc = new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c {cmd}");
 #endif
             proc.CreateNoWindow = true;
